@@ -150,6 +150,47 @@ class _MyHomePageState extends State<MyHomePage> {
     await _fetchFiles();
   }
 
+  Future<void> _uploadFakeTextFile() async {
+    const name = "myTextFile.txt";
+    final path = "$_currentPath/$name";
+    const content = """
+This is a simple
+text file
+with some lines
+of text inside it.
+
+Have fun reading it !
+""";
+
+    try {
+      final oauth2Helper = getDropboxHelper();
+      final response = await oauth2Helper.post(
+        'https://content.dropboxapi.com/2/files/upload',
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "Dropbox-API-Arg": jsonEncode({
+            "autorename": false,
+            "mode": "add",
+            "mute": false,
+            "path": path,
+            "strict_conflict": false
+          })
+        },
+        body: utf8.encode(content),
+      );
+      final responseBody = jsonDecode(response.body);
+      if (responseBody?["error_summary"] != null) {
+        debugPrint(
+          "Got error when uploading file : ${responseBody?["error_summary"]}",
+        );
+      } else {
+        await _fetchFiles();
+      }
+    } catch (e) {
+      debugPrint("Got error when uploading file : $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -197,6 +238,11 @@ class _MyHomePageState extends State<MyHomePage> {
             IconButton(
               onPressed: () => _fetchFiles(),
               icon: const FaIcon(FontAwesomeIcons.arrowsRotate),
+            ),
+          if (_connected)
+            IconButton(
+              onPressed: _uploadFakeTextFile,
+              icon: const FaIcon(FontAwesomeIcons.plus),
             ),
           if (_connected)
             IconButton(

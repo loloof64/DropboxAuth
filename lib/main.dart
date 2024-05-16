@@ -36,10 +36,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var _connected = false;
+  var _isLoading = false;
   var _files = <FilesFetchingEntry>[];
   String? _currentPath;
 
   Future<void> _fetchFiles() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       final oauth2Helper = getDropboxHelper();
       final response = await oauth2Helper.post(
@@ -61,6 +65,9 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } catch (e) {
       debugPrint("Got error when fetching files : $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -79,6 +86,9 @@ class _MyHomePageState extends State<MyHomePage> {
       _processFilesResult(result);
     } catch (e) {
       debugPrint("Got error when fetching files : $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -88,6 +98,10 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (data.hasMore) {
       _goOnFetchingFiles(data.cursor);
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -196,31 +210,37 @@ class _MyHomePageState extends State<MyHomePage> {
             )
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              color: Colors.amber[200],
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  (_currentPath == null || _currentPath?.isEmpty == true)
-                      ? "/"
-                      : _currentPath!,
-                  textAlign: TextAlign.left,
-                ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.red,
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: Colors.amber[200],
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        (_currentPath == null || _currentPath?.isEmpty == true)
+                            ? "/"
+                            : _currentPath!,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ),
+                  const Divider(
+                    height: 5.0,
+                  ),
+                  ...items,
+                ],
               ),
             ),
-            const Divider(
-              height: 5.0,
-            ),
-            ...items,
-          ],
-        ),
-      ),
     );
   }
 }

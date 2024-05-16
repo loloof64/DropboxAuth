@@ -134,6 +134,8 @@ class _MyHomePageState extends State<MyHomePage> {
               currentItem.isFolder
                   ? FontAwesomeIcons.folder
                   : FontAwesomeIcons.file,
+              color:
+                  currentItem.isFolder ? Colors.amber[300] : Colors.blue[300],
             ),
           ),
           Padding(

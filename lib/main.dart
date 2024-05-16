@@ -114,13 +114,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<FileItem> _getItems() {
-    final items = _files.map((currentFile) {
-      return FileItem(
-        isFolder: currentFile.tag == Tag.folder,
-        name: currentFile.name,
-        path: currentFile.pathLower,
-      );
-    }).toList();
+    final items = _files
+        .map((currentFile) {
+          return FileItem(
+            isFolder: currentFile.tag == Tag.folder,
+            name: currentFile.name,
+            path: currentFile.pathLower,
+          );
+        })
+        .where((currentItem) =>
+            currentItem.isFolder || currentItem.name.endsWith('.txt'))
+        .toList();
     items.sort((first, snd) {
       if (first.isFolder && !snd.isFolder) {
         return -1;

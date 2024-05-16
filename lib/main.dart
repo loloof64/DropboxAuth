@@ -4,6 +4,7 @@ import 'package:dropbox_auth/dropbox_calls.dart';
 import 'package:dropbox_auth/models/dropbox_files_fetching.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:equatable/equatable.dart';
 
 void main() {
   runApp(const MyApp());
@@ -103,6 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return FileItem(
         isFolder: currentFile.tag == Tag.folder,
         name: currentFile.name,
+        path: currentFile.pathLower,
       );
     }).toList();
     items.sort((first, snd) {
@@ -114,7 +116,24 @@ class _MyHomePageState extends State<MyHomePage> {
         return first.name.compareTo(snd.name);
       }
     });
-    return items;
+    return (_currentPath == null || _currentPath?.isEmpty == true)
+        ? items
+        : [goBackItem, ...items];
+  }
+
+  Future<void> _navigateBack() async {
+    if (_currentPath == null || _currentPath?.isEmpty == true) return;
+    final currentPathParts = _currentPath!.split("/");
+    final newPath =
+        currentPathParts.sublist(0, currentPathParts.length - 1).join("/");
+    await _navigateInto(newPath);
+  }
+
+  Future<void> _navigateInto(String path) async {
+    setState(() {
+      _currentPath = path;
+    });
+    await _fetchFiles();
   }
 
   @override
@@ -126,23 +145,32 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final items = _getItems().map((currentItem) {
-      return Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FaIcon(
-              currentItem.isFolder
-                  ? FontAwesomeIcons.folder
-                  : FontAwesomeIcons.file,
-              color:
-                  currentItem.isFolder ? Colors.amber[300] : Colors.blue[300],
+      return InkWell(
+        onTap: () {
+          if (currentItem == goBackItem) {
+            _navigateBack();
+          } else if (currentItem.isFolder) {
+            _navigateInto(currentItem.path);
+          }
+        },
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FaIcon(
+                currentItem.isFolder
+                    ? FontAwesomeIcons.folder
+                    : FontAwesomeIcons.file,
+                color:
+                    currentItem.isFolder ? Colors.amber[300] : Colors.blue[300],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(currentItem.name),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(currentItem.name),
+            ),
+          ],
+        ),
       );
     }).toList();
 
@@ -168,25 +196,48 @@ class _MyHomePageState extends State<MyHomePage> {
             )
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: items,
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              color: Colors.amber[200],
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  (_currentPath == null || _currentPath?.isEmpty == true)
+                      ? "/"
+                      : _currentPath!,
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ),
+            const Divider(
+              height: 5.0,
+            ),
+            ...items,
+          ],
         ),
       ),
     );
   }
 }
 
-class FileItem {
-  bool isFolder;
-  String name;
+class FileItem extends Equatable {
+  final bool isFolder;
+  final String name;
+  final String path;
 
-  FileItem({
+  @override
+  List<Object> get props => [name, path, isFolder];
+
+  const FileItem({
     required this.isFolder,
     required this.name,
+    required this.path,
   });
 }
+
+const goBackItem = FileItem(isFolder: true, name: '..', path: '');

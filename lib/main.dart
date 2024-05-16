@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dropbox_auth/dropbox_calls.dart';
 import 'package:dropbox_auth/models/dropbox_files_fetching.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:equatable/equatable.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -119,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return FileItem(
             isFolder: currentFile.tag == Tag.folder,
             name: currentFile.name,
-            path: currentFile.pathLower,
+            path: currentFile.pathDisplay,
           );
         })
         .where((currentItem) =>
@@ -195,6 +197,47 @@ Have fun reading it !
     }
   }
 
+  Future<void> _downloadItem(String path) async {
+    try {
+      final oauth2Helper = getDropboxHelper();
+      final response = await oauth2Helper.post(
+        'https://content.dropboxapi.com/2/files/download',
+        headers: {
+          "Dropbox-API-Arg": jsonEncode({
+            "path": path,
+          }),
+        },
+      );
+      final content = response.body;
+      final fileName = path.split("/").last;
+
+      final downloadsPath = await getDownloadsDirectory();
+      if (downloadsPath == null) {
+        debugPrint("Could not get downloads path !");
+        return;
+      }
+      final targetFile =
+          File("${downloadsPath.path}${Platform.pathSeparator}$fileName");
+      await targetFile.create();
+
+      /* 
+      On desktop, we have to save file ourself.
+      */
+      if (!Platform.isAndroid) {
+        await targetFile.writeAsString(content);
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("File saved"),
+        ),
+      );
+    } catch (e) {
+      debugPrint("Got error when downloading file : $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -210,6 +253,8 @@ Have fun reading it !
             _navigateBack();
           } else if (currentItem.isFolder) {
             _navigateInto(currentItem.path);
+          } else {
+            _downloadItem(currentItem.path);
           }
         },
         child: Row(

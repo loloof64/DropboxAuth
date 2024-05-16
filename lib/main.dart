@@ -99,12 +99,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   List<FileItem> _getItems() {
-    return _files.map((currentFile) {
+    final items = _files.map((currentFile) {
       return FileItem(
         isFolder: currentFile.tag == Tag.folder,
         name: currentFile.name,
       );
     }).toList();
+    items.sort((first, snd) {
+      if (first.isFolder && !snd.isFolder) {
+        return -1;
+      } else if (!first.isFolder && snd.isFolder) {
+        return 1;
+      } else {
+        return first.name.compareTo(snd.name);
+      }
+    });
+    return items;
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:oauth2_client/oauth2_helper.dart';
 
 import 'secrets.dart';
@@ -11,8 +13,10 @@ class DropBoxClient extends OAuth2Client {
         );
 }
 
-const _customUrlScheme = "http://localhost:2566";
-const _redirectUrl = "http://localhost:2566/irh4587sjd";
+final _customUrlScheme = Platform.isAndroid ? "https" : "http://localhost:2566";
+final _redirectUrl = Platform.isAndroid
+    ? "https://flutterauthloloof64.netlify.app/oauth2redirect"
+    : "http://localhost:2566/irh4587sjd";
 final _scopes = [
   'account_info.read',
   'files.metadata.write',

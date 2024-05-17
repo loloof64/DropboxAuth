@@ -15,7 +15,7 @@ class DropBoxClient extends OAuth2Client {
 
 final _customUrlScheme = Platform.isAndroid ? "https" : "http://localhost:2566";
 final _redirectUrl = Platform.isAndroid
-    ? "https://flutterauthloloof64.netlify.app/oauth2redirect"
+    ? "https://loloof64.github.io/DropboxAuth/oauth2redirect"
     : "http://localhost:2566/irh4587sjd";
 final _scopes = [
   'account_info.read',

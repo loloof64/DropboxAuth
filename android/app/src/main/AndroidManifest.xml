@@ -30,9 +30,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https"
-				    android:host="flutterauthloloof64.netlify.app"
-				    android:pathPrefix="/oauth2redirect"  />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="loloof64.github.io"
+				    android:pathPrefix="/DropboxAuth/oauth2redirect"  />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

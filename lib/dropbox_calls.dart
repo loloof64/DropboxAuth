@@ -13,9 +13,9 @@ class DropBoxClient extends OAuth2Client {
         );
 }
 
-final _customUrlScheme = Platform.isAndroid ? "https" : "http://localhost:2566";
+final _customUrlScheme = Platform.isAndroid ? "myauth2783" : "http://localhost:2566";
 final _redirectUrl = Platform.isAndroid
-    ? "https://loloof64.github.io/DropboxAuth/oauth2redirect"
+    ? "myauth2783://landingpage"
     : "http://localhost:2566/irh4587sjd";
 final _scopes = [
   'account_info.read',
